@@ -50,3 +50,6 @@ class TestBankAccount(unittest.TestCase):
         account = CurrentAccount("James Carlwell", "57995436", 1200, "jamesCark@yahoo.co.uk", "07898762365", 500, "current")
         account_dict = account.to_dict()
         self.assertEqual(account_dict, {"account_holder": "James Carlwell", "account_number": "57995436", "balance": 1200.0, "email": "jamesCark@yahoo.co.uk", "phone_number": "07898762365", "overdraft_limit": 500.0, "account_type": "current"})
+
+if __name__ == "__main__":
+    unittest.main()
