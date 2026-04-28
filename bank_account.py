@@ -43,6 +43,9 @@ class BankAccount(LogMixin, metaclass=AccountMeta):
     def notify_observers(self, message):
         for observer in self.observers:
             observer.update(message)
+    
+    def __eq__(self, other):
+        return self.__dict__ == other.__dict__
 
     @abstractmethod
     def __str__(self):
@@ -50,6 +53,11 @@ class BankAccount(LogMixin, metaclass=AccountMeta):
 
     @abstractmethod
     def to_dict(self):
+        pass
+
+    @classmethod
+    @abstractmethod
+    def from_dict(cls, dict_account):
         pass
     
     @log_transaction("INFO")

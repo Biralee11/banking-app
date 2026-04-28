@@ -14,6 +14,16 @@ class CurrentAccount(BankAccount):
     def to_dict(self):
         return {"account_holder": self.account_holder, "account_number": self.account_number, "balance": self.balance, "email": self.email, "phone_number": self.phone_number, "overdraft_limit": self.overdraft_limit, "account_type": self.account_type}
     
+    @classmethod
+    def from_dict(cls, dict_account):
+        account_holder = dict_account["account_holder"]
+        account_number = dict_account["account_number"]
+        balance = dict_account["balance"]
+        email = dict_account["email"]
+        phone_number = dict_account["phone_number"]
+        overdraft_limit = dict_account["overdraft_limit"]
+        return cls(account_holder, account_number, balance, email, phone_number, overdraft_limit)
+    
     @log_transaction("WARNING")
     def withdraw(self, amount):
         if amount > (self.balance + self.overdraft_limit):

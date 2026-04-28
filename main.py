@@ -369,24 +369,11 @@ def load_from_file():
             accounts = json.load(file)
             accounts_to_object = list()
             for account in accounts:
-                account_holder = account["account_holder"]
-                account_number = account["account_number"]
-                balance = account["balance"]
-                email = account["email"]
-                phone_number = account["phone_number"]
-                account_type = account["account_type"]
-                if account_type.lower() ==  "savings":
-                    interest_rate = account["interest_rate"]
-                    if account["interest_strategy"] == "SimpleInterestStrategy":
-                        interest_strategy = SimpleInterestStrategy()
-                    elif account["interest_strategy"] == "CompoundInterestStrategy":
-                        interest_strategy = CompoundInterestStrategy()
-                    account = SavingsAccount(account_holder, account_number, balance, email, phone_number, interest_rate, interest_strategy)
-                    accounts_to_object.append(account)
-                elif account_type.lower() ==  "current":
-                    overdraft_limit = account["overdraft_limit"]
-                    account = CurrentAccount(account_holder, account_number, balance, email, phone_number, overdraft_limit)
-                    accounts_to_object.append(account)
+                if account["account_type"].lower() ==  "savings":
+                    account = SavingsAccount.from_dict(account)
+                elif account["account_type"].lower() ==  "current":
+                    account = CurrentAccount.from_dict(account)
+                accounts_to_object.append(account)                 
                 email_notification = EmailNotification()
                 sms_notification = SMSNotification() 
                 account.add_observer(email_notification)
