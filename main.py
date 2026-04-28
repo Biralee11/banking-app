@@ -4,6 +4,8 @@ from bank_transaction import BankTransaction
 from random import randint
 import json
 import re
+from strategies import SimpleInterestStrategy, CompoundInterestStrategy
+from notifications import EmailNotification, SMSNotification
 
 def fetch_accounts(accounts):
     for account in accounts:
@@ -34,7 +36,7 @@ def create_account(accounts):
         if account_type.lower() == "savings" or account_type.lower() == "current":
             break
         else:
-            print("Invalid account type. Please enter Savings or Current enter exit to go back.")
+            print("Invalid account type, Please enter Savings or Current or enter exit to go back.")
 
     while True:
         user_input = input("Enter Name: ")
@@ -92,8 +94,23 @@ def create_account(accounts):
                 break
             except ValueError:
                 print("Invalid input, please enter a number or enter exit to go back.")
+        
+        while True:
+            user_input = input("Enter Interest strategy (Simple/Compound): ")
+            if user_input.lower() == "exit":
+                return
+            interest_strategy = user_input
+            if interest_strategy.lower() == "simple":
+                interest_strategy = SimpleInterestStrategy()
+                break
+            elif interest_strategy.lower() == "compound":
+                interest_strategy = CompoundInterestStrategy()
+                break
+            else:
+                print("Invalid Interest strategy, Please enter Simple or Compound or enter exit to go back.")
+
         account_number = str(randint(0, 99999999)).zfill(8)
-        account = SavingsAccount(account_holder, account_number, opening_balance, email, phone_number, interest_rate, account_type)
+        account = SavingsAccount(account_holder, account_number, opening_balance, email, phone_number, interest_rate, interest_strategy)
 
     elif account_type.lower() == "current":
         while True:
@@ -103,16 +120,20 @@ def create_account(accounts):
             try:
                 overdraft_limit = float(user_input)
                 if overdraft_limit < 0:
-                    print("Overdraft Limit must be greater than zero\nenter a number greater than zero or enter exit to go back.")
+                    print("Overdraft Limit must be greater than zero, enter a number greater than zero or enter exit to go back.")
                     continue
                 break
             except ValueError:
                 print("Invalid input, please enter a number or enter exit to go back.")
         account_number = str(randint(0, 99999999)).zfill(8)
-        account = CurrentAccount(account_holder, account_number, opening_balance, email, phone_number, overdraft_limit, account_type)
+        account = CurrentAccount(account_holder, account_number, opening_balance, email, phone_number, overdraft_limit)
 
     accounts.append(account)
-    print("Account created successfully!")
+    account.log("Account created successfully")
+    email_notification = EmailNotification()
+    sms_notification = SMSNotification() 
+    account.add_observer(email_notification)
+    account.add_observer(sms_notification)
     return True
 
 def deposit(accounts):
@@ -353,13 +374,23 @@ def load_from_file():
                 balance = account["balance"]
                 email = account["email"]
                 phone_number = account["phone_number"]
-                account_type = account["account_type"] 
+                account_type = account["account_type"]
                 if account_type.lower() ==  "savings":
                     interest_rate = account["interest_rate"]
-                    accounts_to_object.append(SavingsAccount(account_holder, account_number, balance, email, phone_number, interest_rate, account_type))
+                    if account["interest_strategy"] == "SimpleInterestStrategy":
+                        interest_strategy = SimpleInterestStrategy()
+                    elif account["interest_strategy"] == "CompoundInterestStrategy":
+                        interest_strategy = CompoundInterestStrategy()
+                    account = SavingsAccount(account_holder, account_number, balance, email, phone_number, interest_rate, interest_strategy)
+                    accounts_to_object.append(account)
                 elif account_type.lower() ==  "current":
                     overdraft_limit = account["overdraft_limit"]
-                    accounts_to_object.append(CurrentAccount(account_holder, account_number, balance, email, phone_number, overdraft_limit, account_type))
+                    account = CurrentAccount(account_holder, account_number, balance, email, phone_number, overdraft_limit)
+                    accounts_to_object.append(account)
+                email_notification = EmailNotification()
+                sms_notification = SMSNotification() 
+                account.add_observer(email_notification)
+                account.add_observer(sms_notification)
             return accounts_to_object
     except FileNotFoundError:
         return []
