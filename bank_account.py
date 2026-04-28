@@ -3,7 +3,9 @@ from typing import Optional
 from descriptors import BalanceDescriptor
 from mixins import LogMixin
 
-
+# Decorator factory that wraps deposit and withdraw methods with transaction logging.
+# Takes a log_level argument (e.g. "INFO", "WARNING") to allow configurable log output.
+# Returns True/False from the wrapped method so callers can check if the transaction succeeded.
 def log_transaction(log_level):
     def my_decorator(func):
         def wrapper(*args, **kwargs):
@@ -17,6 +19,9 @@ def log_transaction(log_level):
         return wrapper
     return my_decorator
 
+# Metaclass that enforces all account classes must define a 'currency' class attribute.
+# Inherits from ABCMeta to remain compatible with Python's Abstract Base Class system.
+# __new__ intercepts class creation and raises an error if 'currency' is missing on the base class.
 class AccountMeta(ABCMeta):
     def __new__(cls, name, bases, dct):
         if bases == () and "currency" not in dct:
